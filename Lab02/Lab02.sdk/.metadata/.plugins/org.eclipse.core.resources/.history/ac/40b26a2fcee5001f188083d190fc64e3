@@ -1,0 +1,163 @@
+/************************************************************************ 
+ * File name: interrupt_counter_btn.c
+ * Description: This code creates a Zynq embedded system that controls 
+ * four LED-counters by push button triggered external interrupts.
+ ************************************************************************/
+ 
+#include "xparameters.h"
+#include "xgpio.h"
+#include "xscugic.h"
+#include "xil_exception.h"
+#include "xil_printf.h"
+
+#define INTC_DEVICE_ID 		   XPAR_PS7_SCUGIC_0_DEVICE_ID								// Defining interrupt controller Device ID
+#define BTNS_DEVICE_ID		   XPAR_AXI_GPIO_0_DEVICE_ID								// Defining button device peripheral ID (GPIO) using ID given by the developer from Vivado
+#define LEDS_DEVICE_ID		   XPAR_AXI_GPIO_1_DEVICE_ID								// Defining LED device peripheral ID (GPIO) using ID given by the developer from Vivado
+#define INTC_GPIO_INTERRUPT_ID XPAR_FABRIC_AXI_GPIO_0_IP2INTC_IRPT_INTR
+#define BTN_INT 			   XGPIO_IR_CH1_MASK
+
+XGpio      LEDInst;																		// GPIO instance for controlling and communicating with LEDs
+XGpio      BTNInst;																		// GPIO instance for controlling and communicating with GPIOs
+XScuGic    INTCInst;																    // instance for interrupt control
+static int led_data;																	// Variable holding output LED data
+static int btn_value;																	// variable holding input button data
+
+static void BTN_Intr_Handler(void *baseaddr_p);											// Function that handles the interrupt caused by buttons
+static int  InterruptSystemSetup(XScuGic *XScuGicInstancePtr);							// Sets up the interrupt configurations
+static int  IntcInitFunction(u16 DeviceId, XGpio *GpioInstancePtr);						// Initializes interrupt control
+
+
+/*
+ * Button Interrupt Handler
+ * This function is called when a button press is detected
+ * */
+void BTN_Intr_Handler(void *InstancePtr)
+{
+	XGpio_InterruptDisable(&BTNInst, BTN_INT);											// Disable interrupts while handling this interrupt
+
+	if ((XGpio_InterruptGetStatus(&BTNInst) & BTN_INT) != BTN_INT)					    // Check if the interrupt status register confirms the button press
+	{
+		return;
+	}
+
+	btn_value = XGpio_DiscreteRead(&BTNInst, 1);										// Read the button instance/input value, and store it in btn_value
+
+	if(btn_value != 1)																	// Add the button value to led_data unless button value is 1.
+	{
+		led_data = led_data + btn_value;
+	}
+	else
+	{
+		led_data = 0;																	// If btn_value is 1, set led_data to zero.
+	}
+
+    XGpio_DiscreteWrite(&LEDInst, 1, led_data);											// Set the LED instance/ output GPIOs to the value of led_data
+
+    (void)XGpio_InterruptClear(&BTNInst, BTN_INT);										// Clearing the GPIO interrupt flag
+
+    XGpio_InterruptEnable(&BTNInst, BTN_INT);											// Re-enable the interrupt as we exit the interrupt handler
+}
+
+
+/**
+ * Main Function
+ * Initializes the system, sets up GPIO, configures interrupts, and enters an infinite loop.
+ */
+int main (void)
+{
+	int status;
+
+	status = XGpio_Initialize(&LEDInst, LEDS_DEVICE_ID);							 // Initializes GPIO for LED
+
+	if(status != XST_SUCCESS)														 // Returns failure, if initialization fails
+	{
+		return XST_FAILURE;
+	}
+
+	status = XGpio_Initialize(&BTNInst, BTNS_DEVICE_ID);							 // Initializes GPIO for buttons
+
+	if(status != XST_SUCCESS)														 // Returns failure, if initialization fails
+	{
+		return XST_FAILURE;
+	}
+
+	XGpio_SetDataDirection(&LEDInst, 1, 0x00);										 // Sets LED instance/GPIO as output
+
+	XGpio_SetDataDirection(&BTNInst, 1, 0xFF);										 // Sets button instance/GPIO as inputs
+
+
+	status = IntcInitFunction(INTC_DEVICE_ID, &BTNInst);							 // Initializes interrupt control, and configures button interrupts
+
+	if(status != XST_SUCCESS)														 // Returns failure, if interrupt control in not initialized
+	{
+		return XST_FAILURE;
+	}
+
+	while(1);																		 // Stays in this loop forever/runs forever
+
+	return 0;
+}
+
+
+/**
+ * Interrupt System Setup
+ * Enables interrupts and registers exception handlers.
+ */
+int InterruptSystemSetup(XScuGic *XScuGicInstancePtr)
+{
+	XGpio_InterruptEnable(&BTNInst, BTN_INT);										//Enable interrupts on GPIO(button)
+
+	XGpio_InterruptGlobalEnable(&BTNInst);										 	// Enables Global interrupts for GPIO
+
+	Xil_ExceptionRegisterHandler(XIL_EXCEPTION_ID_INT,								// This function links the interrupts to the driver
+			 	 	 	 	 	 (Xil_ExceptionHandler)XScuGic_InterruptHandler,
+			 	 	 	 	 	 XScuGicInstancePtr);
+
+	Xil_ExceptionEnable();															// Enables the interrupts at processor level
+
+	return XST_SUCCESS;																// Returns success, once the code gets this far.
+}
+
+/*
+* Configures and enables interrupts for button presses.
+ */
+int IntcInitFunction(u16 DeviceId, XGpio *GpioInstancePtr)
+{
+	XScuGic_Config *IntcConfig;
+	int status;
+
+	IntcConfig = XScuGic_LookupConfig(DeviceId);									// Look up the configuration of the interrupt controller
+
+	status = XScuGic_CfgInitialize(&INTCInst, IntcConfig, IntcConfig->CpuBaseAddress);// Initialize interrupt controller
+
+	if(status != XST_SUCCESS)														// Return failure, if not initialized
+	{
+		return XST_FAILURE;
+	}
+
+	status = InterruptSystemSetup(&INTCInst);										// Set up the interrupt system
+
+	if(status != XST_SUCCESS)														// Return failure, if not initialized
+	{
+		return XST_FAILURE;
+	}
+	
+	status = XScuGic_Connect(&INTCInst,												// Connects the interrupt controller to the button interrupt handler
+					  	  	 INTC_GPIO_INTERRUPT_ID,
+					  	  	 (Xil_ExceptionHandler)BTN_Intr_Handler,
+					  	  	 (void *)GpioInstancePtr);
+
+	if(status != XST_SUCCESS)														// Returns failure, if not initialized
+	{
+		return XST_FAILURE;
+	}
+
+	XGpio_InterruptEnable(GpioInstancePtr, 1);										// Enable GPIO interrupts
+
+	XGpio_InterruptGlobalEnable(GpioInstancePtr);									// Enable global interrupt for GPIO
+
+	XScuGic_Enable(&INTCInst, INTC_GPIO_INTERRUPT_ID);								// Enable specific interrupt for GPIO
+	
+	return XST_SUCCESS;																// Return success
+}
+
