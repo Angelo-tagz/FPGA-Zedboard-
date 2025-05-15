@@ -1,0 +1,154 @@
+#-----------------------------------------------------------
+# Vivado v2019.1 (64-bit)
+# SW Build 2552052 on Fri May 24 14:49:42 MDT 2019
+# IP Build 2548770 on Fri May 24 18:01:18 MDT 2019
+# Start of session at: Sun Apr 27 19:25:07 2025
+# Process ID: 13688
+# Current directory: C:/Users/Twaga/ECE421/XADC_DMA_FFT
+# Command line: vivado.exe -gui_launcher_event rodinguilauncherevent16428 C:\Users\Twaga\ECE421\XADC_DMA_FFT\XADC_PS.xpr
+# Log file: C:/Users/Twaga/ECE421/XADC_DMA_FFT/vivado.log
+# Journal file: C:/Users/Twaga/ECE421/XADC_DMA_FFT\vivado.jou
+#-----------------------------------------------------------
+start_gui
+open_project C:/Users/Twaga/ECE421/XADC_DMA_FFT/XADC_PS.xpr
+INFO: [Project 1-313] Project file moved from 'C:/Users/Twaga/ECE421/XADC_PS' since last save.
+Scanning sources...
+Finished scanning sources
+INFO: [IP_Flow 19-234] Refreshing IP repositories
+INFO: [IP_Flow 19-1704] No user IP repositories specified
+INFO: [IP_Flow 19-2313] Loaded Vivado IP repository 'C:/Xilinx/Vivado/2019.1/data/ip'.
+open_project: Time (s): cpu = 00:00:13 ; elapsed = 00:00:07 . Memory (MB): peak = 741.969 ; gain = 116.223
+open_bd_design {C:/Users/Twaga/ECE421/XADC_DMA_FFT/XADC_PS.srcs/sources_1/bd/XADC_PS/XADC_PS.bd}
+Adding component instance block -- xilinx.com:ip:processing_system7:5.5 - processing_system7_0
+Adding component instance block -- xilinx.com:ip:xadc_wiz:3.3 - xadc_wiz_0
+Adding component instance block -- xilinx.com:ip:axi_interconnect:2.1 - ps7_0_axi_periph
+Adding component instance block -- xilinx.com:ip:axi_protocol_converter:2.1 - auto_pc
+Adding component instance block -- xilinx.com:ip:proc_sys_reset:5.0 - rst_ps7_0_100M
+Successfully read diagram <XADC_PS> from BD file <C:/Users/Twaga/ECE421/XADC_DMA_FFT/XADC_PS.srcs/sources_1/bd/XADC_PS/XADC_PS.bd>
+open_bd_design: Time (s): cpu = 00:00:06 ; elapsed = 00:00:05 . Memory (MB): peak = 925.988 ; gain = 73.172
+update_compile_order -fileset sources_1
+startgroup
+create_bd_cell -type ip -vlnv xilinx.com:ip:xfft:9.1 xfft_0
+endgroup
+set_property location {1 190 -232} [get_bd_cells xfft_0]
+set_property -dict [list CONFIG.transform_length {64} CONFIG.implementation_options {automatically_select} CONFIG.number_of_stages_using_block_ram_for_data_and_phase_factors {0}] [get_bd_cells xfft_0]
+startgroup
+create_bd_cell -type ip -vlnv xilinx.com:ip:xlconstant:1.1 xlconstant_0
+endgroup
+set_property location {0.5 -3 -267} [get_bd_cells xlconstant_0]
+copy_bd_objs /  [get_bd_cells {xlconstant_0}]
+set_property location {1 32 -197} [get_bd_cells xlconstant_1]
+set_property -dict [list CONFIG.CONST_WIDTH {8}] [get_bd_cells xlconstant_0]
+connect_bd_net [get_bd_pins xlconstant_0/dout] [get_bd_pins xfft_0/s_axis_config_tdata]
+WARNING: [BD 41-1306] The connection to interface pin /xfft_0/s_axis_config_tdata is being overridden by the user. This pin will not be connected as a part of interface connection S_AXIS_CONFIG
+connect_bd_net [get_bd_pins xlconstant_1/dout] [get_bd_pins xfft_0/s_axis_config_tvalid]
+WARNING: [BD 41-1306] The connection to interface pin /xfft_0/s_axis_config_tvalid is being overridden by the user. This pin will not be connected as a part of interface connection S_AXIS_CONFIG
+startgroup
+set_property -dict [list CONFIG.data_format.VALUE_SRC USER] [get_bd_cells xfft_0]
+set_property -dict [list CONFIG.data_format {floating_point} CONFIG.aresetn {true} CONFIG.output_ordering {natural_order} CONFIG.phase_factor_width {24}] [get_bd_cells xfft_0]
+endgroup
+startgroup
+endgroup
+startgroup
+create_bd_cell -type ip -vlnv xilinx.com:ip:axi_dma:7.1 axi_dma_0
+endgroup
+set_property -dict [list CONFIG.c_m_axi_s2mm_data_width.VALUE_SRC USER] [get_bd_cells axi_dma_0]
+set_property -dict [list CONFIG.c_include_sg {0} CONFIG.c_sg_include_stscntrl_strm {0} CONFIG.c_m_axi_mm2s_data_width {64} CONFIG.c_m_axis_mm2s_tdata_width {64} CONFIG.c_include_mm2s_dre {1} CONFIG.c_mm2s_burst_size {256} CONFIG.c_m_axi_s2mm_data_width {64} CONFIG.c_include_s2mm_dre {1}] [get_bd_cells axi_dma_0]
+set_property location {4.5 1076 -314} [get_bd_cells axi_dma_0]
+apply_bd_automation -rule xilinx.com:bd_rule:axi4 -config { Clk_master {/processing_system7_0/FCLK_CLK0 (100 MHz)} Clk_slave {Auto} Clk_xbar {/processing_system7_0/FCLK_CLK0 (100 MHz)} Master {/processing_system7_0/M_AXI_GP0} Slave {/axi_dma_0/S_AXI_LITE} intc_ip {/ps7_0_axi_periph} master_apm {0}}  [get_bd_intf_pins axi_dma_0/S_AXI_LITE]
+Slave segment </axi_dma_0/S_AXI_LITE/Reg> is being mapped into address space </processing_system7_0/Data> at <0x4040_0000 [ 64K ]>
+WARNING: [IP_Flow 19-474] Invalid Parameter 'Component_Name'
+WARNING: [IP_Flow 19-474] Invalid Parameter 'Component_Name'
+startgroup
+set_property -dict [list CONFIG.PCW_USE_S_AXI_ACP {1} CONFIG.PCW_QSPI_PERIPHERAL_ENABLE {0} CONFIG.PCW_ENET0_PERIPHERAL_ENABLE {0} CONFIG.PCW_SD0_PERIPHERAL_ENABLE {0} CONFIG.PCW_TTC0_PERIPHERAL_ENABLE {0} CONFIG.PCW_USB0_PERIPHERAL_ENABLE {0}] [get_bd_cells processing_system7_0]
+endgroup
+INFO: [Device 21-403] Loading part xc7z020clg484-1
+apply_bd_automation -rule xilinx.com:bd_rule:axi4 -config { Clk_master {Auto} Clk_slave {Auto} Clk_xbar {Auto} Master {/axi_dma_0/M_AXI_MM2S} Slave {/processing_system7_0/S_AXI_ACP} intc_ip {Auto} master_apm {0}}  [get_bd_intf_pins processing_system7_0/S_AXI_ACP]
+Slave segment </processing_system7_0/S_AXI_ACP/ACP_DDR_LOWOCM> is being mapped into address space </axi_dma_0/Data_MM2S> at <0x0000_0000 [ 512M ]>
+Slave segment </processing_system7_0/S_AXI_ACP/ACP_IOP> is being mapped into address space </axi_dma_0/Data_MM2S> at <0xE000_0000 [ 4M ]>
+INFO: [BD 41-1051] The usage register of slave segment /processing_system7_0/S_AXI_ACP/ACP_IOP does not match the usage memory of address space /axi_dma_0/Data_MM2S and will be excluded. Use the include_bd_addr_seg command to override this precaution and make the slave segment visible within this address space.
+Excluding </processing_system7_0/S_AXI_ACP/ACP_IOP> from </axi_dma_0/Data_MM2S>
+Slave segment </processing_system7_0/S_AXI_ACP/ACP_M_AXI_GP0> is being mapped into address space </axi_dma_0/Data_MM2S> at <0x4000_0000 [ 1G ]>
+INFO: [BD 41-1051] The usage register of slave segment /processing_system7_0/S_AXI_ACP/ACP_M_AXI_GP0 does not match the usage memory of address space /axi_dma_0/Data_MM2S and will be excluded. Use the include_bd_addr_seg command to override this precaution and make the slave segment visible within this address space.
+Excluding </processing_system7_0/S_AXI_ACP/ACP_M_AXI_GP0> from </axi_dma_0/Data_MM2S>
+regenerate_bd_layout
+regenerate_bd_layout
+apply_bd_automation -rule xilinx.com:bd_rule:axi4 -config { Clk_master {Auto} Clk_slave {/processing_system7_0/FCLK_CLK0 (100 MHz)} Clk_xbar {/processing_system7_0/FCLK_CLK0 (100 MHz)} Master {/axi_dma_0/M_AXI_S2MM} Slave {/processing_system7_0/S_AXI_ACP} intc_ip {/axi_smc} master_apm {0}}  [get_bd_intf_pins axi_dma_0/M_AXI_S2MM]
+Slave segment </processing_system7_0/S_AXI_ACP/ACP_DDR_LOWOCM> is being mapped into address space </axi_dma_0/Data_S2MM> at <0x0000_0000 [ 512M ]>
+Slave segment </processing_system7_0/S_AXI_ACP/ACP_IOP> is being mapped into address space </axi_dma_0/Data_S2MM> at <0xE000_0000 [ 4M ]>
+INFO: [BD 41-1051] The usage register of slave segment /processing_system7_0/S_AXI_ACP/ACP_IOP does not match the usage memory of address space /axi_dma_0/Data_S2MM and will be excluded. Use the include_bd_addr_seg command to override this precaution and make the slave segment visible within this address space.
+Excluding </processing_system7_0/S_AXI_ACP/ACP_IOP> from </axi_dma_0/Data_S2MM>
+Slave segment </processing_system7_0/S_AXI_ACP/ACP_M_AXI_GP0> is being mapped into address space </axi_dma_0/Data_S2MM> at <0x4000_0000 [ 1G ]>
+INFO: [BD 41-1051] The usage register of slave segment /processing_system7_0/S_AXI_ACP/ACP_M_AXI_GP0 does not match the usage memory of address space /axi_dma_0/Data_S2MM and will be excluded. Use the include_bd_addr_seg command to override this precaution and make the slave segment visible within this address space.
+Excluding </processing_system7_0/S_AXI_ACP/ACP_M_AXI_GP0> from </axi_dma_0/Data_S2MM>
+set_property location {3 969 348} [get_bd_cells xadc_wiz_0]
+set_property location {5.5 1819 380} [get_bd_cells xadc_wiz_0]
+set_property location {3 904 370} [get_bd_cells xfft_0]
+connect_bd_intf_net [get_bd_intf_pins axi_dma_0/M_AXIS_MM2S] [get_bd_intf_pins xfft_0/S_AXIS_DATA]
+connect_bd_intf_net [get_bd_intf_pins xfft_0/M_AXIS_DATA] [get_bd_intf_pins axi_dma_0/S_AXIS_S2MM]
+connect_bd_net [get_bd_pins xfft_0/aclk] [get_bd_pins processing_system7_0/FCLK_CLK0]
+connect_bd_net [get_bd_pins xfft_0/aresetn] [get_bd_pins rst_ps7_0_100M/peripheral_aresetn]
+regenerate_bd_layout
+validate_bd_design
+INFO: [Ipptcl 7-1463] No Compatible Board Interface found. Board Tab not created in customize GUI
+WARNING: [BD 41-1629] Slave segment </processing_system7_0/S_AXI_ACP/ACP_IOP> is excluded from all addressing paths.
+WARNING: [BD 41-1629] Slave segment </processing_system7_0/S_AXI_ACP/ACP_M_AXI_GP0> is excluded from all addressing paths.
+INFO: [xilinx.com:ip:xfft:9.1-913] /xfft_0 data_format has been set to manual on the GUI. It will not be updated during validation with a propagated value.
+WARNING: [BD 41-237] Bus Interface property AWUSER_WIDTH does not match between /processing_system7_0/S_AXI_ACP(5) and /axi_smc/M00_AXI(0)
+WARNING: [BD 41-237] Bus Interface property ARUSER_WIDTH does not match between /processing_system7_0/S_AXI_ACP(5) and /axi_smc/M00_AXI(0)
+WARNING: [BD 41-927] Following properties on pin /xadc_wiz_0/s_axi_aclk have been updated from connected ip. They may not be synchronized with cell properties. You can set property on pin directly to confirm the value and resolve the warning.
+	CLK_DOMAIN=XADC_PS_processing_system7_0_0_FCLK_CLK0 
+validate_bd_design: Time (s): cpu = 00:00:08 ; elapsed = 00:00:08 . Memory (MB): peak = 1639.402 ; gain = 69.781
+save_bd_design
+Wrote  : <C:\Users\Twaga\ECE421\XADC_DMA_FFT\XADC_PS.srcs\sources_1\bd\XADC_PS\XADC_PS.bd> 
+Wrote  : <C:/Users/Twaga/ECE421/XADC_DMA_FFT/XADC_PS.srcs/sources_1/bd/XADC_PS/ui/bd_9142cf3a.ui> 
+reset_run synth_1
+reset_run XADC_PS_processing_system7_0_0_synth_1
+launch_runs impl_1 -to_step write_bitstream -jobs 6
+INFO: [BD 41-1662] The design 'XADC_PS.bd' is already validated. Therefore parameter propagation will not be re-run.
+WARNING: [BD 41-1629] Slave segment </processing_system7_0/S_AXI_ACP/ACP_IOP> is excluded from all addressing paths.
+WARNING: [BD 41-1629] Slave segment </processing_system7_0/S_AXI_ACP/ACP_M_AXI_GP0> is excluded from all addressing paths.
+VHDL Output written to : C:/Users/Twaga/ECE421/XADC_DMA_FFT/XADC_PS.srcs/sources_1/bd/XADC_PS/synth/XADC_PS.v
+VHDL Output written to : C:/Users/Twaga/ECE421/XADC_DMA_FFT/XADC_PS.srcs/sources_1/bd/XADC_PS/sim/XADC_PS.v
+VHDL Output written to : C:/Users/Twaga/ECE421/XADC_DMA_FFT/XADC_PS.srcs/sources_1/bd/XADC_PS/hdl/XADC_PS_wrapper.v
+INFO: [BD 41-1029] Generation completed for the IP Integrator block processing_system7_0 .
+INFO: [BD 41-1029] Generation completed for the IP Integrator block xadc_wiz_0 .
+INFO: [BD 41-1029] Generation completed for the IP Integrator block rst_ps7_0_100M .
+INFO: [BD 41-1029] Generation completed for the IP Integrator block ps7_0_axi_periph/xbar .
+WARNING: [IP_Flow 19-4994] Overwriting existing constraint file 'c:/Users/Twaga/ECE421/XADC_DMA_FFT/XADC_PS.srcs/sources_1/bd/XADC_PS/ip/XADC_PS_auto_pc_0/XADC_PS_auto_pc_0_ooc.xdc'
+INFO: [BD 41-1029] Generation completed for the IP Integrator block ps7_0_axi_periph/s00_couplers/auto_pc .
+INFO: [BD 41-1029] Generation completed for the IP Integrator block xfft_0 .
+INFO: [BD 41-1029] Generation completed for the IP Integrator block xlconstant_0 .
+INFO: [BD 41-1029] Generation completed for the IP Integrator block xlconstant_1 .
+INFO: [BD 41-1029] Generation completed for the IP Integrator block axi_dma_0 .
+Exporting to file c:/Users/Twaga/ECE421/XADC_DMA_FFT/XADC_PS.srcs/sources_1/bd/XADC_PS/ip/XADC_PS_axi_smc_0/bd_0/hw_handoff/XADC_PS_axi_smc_0.hwh
+Generated Block Design Tcl file c:/Users/Twaga/ECE421/XADC_DMA_FFT/XADC_PS.srcs/sources_1/bd/XADC_PS/ip/XADC_PS_axi_smc_0/bd_0/hw_handoff/XADC_PS_axi_smc_0_bd.tcl
+Generated Hardware Definition File c:/Users/Twaga/ECE421/XADC_DMA_FFT/XADC_PS.srcs/sources_1/bd/XADC_PS/ip/XADC_PS_axi_smc_0/bd_0/synth/XADC_PS_axi_smc_0.hwdef
+INFO: [BD 41-1029] Generation completed for the IP Integrator block axi_smc .
+Exporting to file C:/Users/Twaga/ECE421/XADC_DMA_FFT/XADC_PS.srcs/sources_1/bd/XADC_PS/hw_handoff/XADC_PS.hwh
+Generated Block Design Tcl file C:/Users/Twaga/ECE421/XADC_DMA_FFT/XADC_PS.srcs/sources_1/bd/XADC_PS/hw_handoff/XADC_PS_bd.tcl
+Generated Hardware Definition File C:/Users/Twaga/ECE421/XADC_DMA_FFT/XADC_PS.srcs/sources_1/bd/XADC_PS/synth/XADC_PS.hwdef
+INFO: [IP_Flow 19-4993] Using cached IP synthesis design for IP XADC_PS_auto_pc_0, cache-ID = c7981aa4510def98; cache size = 2.411 MB.
+[Sun Apr 27 20:58:32 2025] Launched XADC_PS_processing_system7_0_0_synth_1, XADC_PS_axi_smc_0_synth_1, XADC_PS_axi_dma_0_0_synth_1, XADC_PS_xfft_0_0_synth_1, XADC_PS_xbar_0_synth_1, synth_1...
+Run output will be captured here:
+XADC_PS_processing_system7_0_0_synth_1: C:/Users/Twaga/ECE421/XADC_DMA_FFT/XADC_PS.runs/XADC_PS_processing_system7_0_0_synth_1/runme.log
+XADC_PS_axi_smc_0_synth_1: C:/Users/Twaga/ECE421/XADC_DMA_FFT/XADC_PS.runs/XADC_PS_axi_smc_0_synth_1/runme.log
+XADC_PS_axi_dma_0_0_synth_1: C:/Users/Twaga/ECE421/XADC_DMA_FFT/XADC_PS.runs/XADC_PS_axi_dma_0_0_synth_1/runme.log
+XADC_PS_xfft_0_0_synth_1: C:/Users/Twaga/ECE421/XADC_DMA_FFT/XADC_PS.runs/XADC_PS_xfft_0_0_synth_1/runme.log
+XADC_PS_xbar_0_synth_1: C:/Users/Twaga/ECE421/XADC_DMA_FFT/XADC_PS.runs/XADC_PS_xbar_0_synth_1/runme.log
+synth_1: C:/Users/Twaga/ECE421/XADC_DMA_FFT/XADC_PS.runs/synth_1/runme.log
+[Sun Apr 27 20:58:33 2025] Launched impl_1...
+Run output will be captured here: C:/Users/Twaga/ECE421/XADC_DMA_FFT/XADC_PS.runs/impl_1/runme.log
+launch_runs: Time (s): cpu = 00:00:15 ; elapsed = 00:00:20 . Memory (MB): peak = 1792.312 ; gain = 123.445
+file copy -force C:/Users/Twaga/ECE421/XADC_DMA_FFT/XADC_PS.runs/impl_1/XADC_PS_wrapper.sysdef C:/Users/Twaga/ECE421/XADC_DMA_FFT/XADC_PS.sdk/XADC_PS_wrapper.hdf
+
+launch_sdk -workspace C:/Users/Twaga/ECE421/XADC_DMA_FFT/XADC_PS.sdk -hwspec C:/Users/Twaga/ECE421/XADC_DMA_FFT/XADC_PS.sdk/XADC_PS_wrapper.hdf
+INFO: [Vivado 12-393] Launching SDK...
+INFO: [Vivado 12-417] Running xsdk -workspace C:/Users/Twaga/ECE421/XADC_DMA_FFT/XADC_PS.sdk -hwspec C:/Users/Twaga/ECE421/XADC_DMA_FFT/XADC_PS.sdk/XADC_PS_wrapper.hdf
+INFO: [Vivado 12-3157] SDK launch initiated. Please check console for any further messages.
+launch_sdk -workspace C:/Users/Twaga/ECE421/XADC_DMA_FFT/XADC_PS.sdk -hwspec C:/Users/Twaga/ECE421/XADC_DMA_FFT/XADC_PS.sdk/XADC_PS_wrapper.hdf
+INFO: [Vivado 12-393] Launching SDK...
+INFO: [Vivado 12-417] Running xsdk -workspace C:/Users/Twaga/ECE421/XADC_DMA_FFT/XADC_PS.sdk -hwspec C:/Users/Twaga/ECE421/XADC_DMA_FFT/XADC_PS.sdk/XADC_PS_wrapper.hdf
+INFO: [Vivado 12-3157] SDK launch initiated. Please check console for any further messages.
+exit
+INFO: [Common 17-206] Exiting Vivado at Sun Apr 27 21:22:02 2025...

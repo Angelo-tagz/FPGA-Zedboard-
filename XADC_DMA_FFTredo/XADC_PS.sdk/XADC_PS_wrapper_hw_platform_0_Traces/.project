@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<projectDescription>
+	<name>XADC_PS_wrapper_hw_platform_0_Traces</name>
+	<comment></comment>
+	<projects>
+	</projects>
+	<buildSpec>
+	</buildSpec>
+	<natures>
+		<nature>org.eclipse.linuxtools.tmf.project.nature</nature>
+	</natures>
+	<linkedResources>
+		<link>
+			<name>Traces/Run_Apr-28_15-42/PS_Trace_Apr-28_15-42/PS_Trace_Apr-28_15-42_</name>
+			<type>1</type>
+			<location>C:/Users/Twaga/ECE421/XADC_DMA_FFTredo/XADC_PS.sdk/XADC_PS_wrapper_hw_platform_0_Traces/Traces/.bookmarks</location>
+		</link>
+	</linkedResources>
+</projectDescription>

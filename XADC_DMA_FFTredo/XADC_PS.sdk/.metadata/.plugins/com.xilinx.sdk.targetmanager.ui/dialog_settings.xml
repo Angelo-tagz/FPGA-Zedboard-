@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<section name="Workbench">
+	<item value="Local" key="XADC_PS_wrapper_hw_platform_0-target"/>
+	<item value="XADC_PS_wrapper.bit" key="XADC_PS_wrapper_hw_platform_0-bitFile"/>
+	<item value="XADC_PS_wrapper_hw_platform_0" key="programfpga.hwplatform"/>
+	<item value="Auto Detect" key="XADC_PS_wrapper_hw_platform_0-device"/>
+	<item value="" key="XADC_PS_wrapper_hw_platform_0-bmmFile"/>
+	<item value="false" key="XADC_PS_wrapper_hw_platform_0-partial_bit"/>
+</section>

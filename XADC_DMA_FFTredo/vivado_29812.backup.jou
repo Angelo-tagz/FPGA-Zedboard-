@@ -1,0 +1,19 @@
+#-----------------------------------------------------------
+# Vivado v2019.1 (64-bit)
+# SW Build 2552052 on Fri May 24 14:49:42 MDT 2019
+# IP Build 2548770 on Fri May 24 18:01:18 MDT 2019
+# Start of session at: Mon Apr 28 11:08:10 2025
+# Process ID: 29812
+# Current directory: C:/Users/Twaga/ECE421/XADC_DMA_FFTredo
+# Command line: vivado.exe -gui_launcher_event rodinguilauncherevent51700 C:\Users\Twaga\ECE421\XADC_DMA_FFTredo\XADC_PS.xpr
+# Log file: C:/Users/Twaga/ECE421/XADC_DMA_FFTredo/vivado.log
+# Journal file: C:/Users/Twaga/ECE421/XADC_DMA_FFTredo\vivado.jou
+#-----------------------------------------------------------
+start_gui
+open_project C:/Users/Twaga/ECE421/XADC_DMA_FFTredo/XADC_PS.xpr
+update_compile_order -fileset sources_1
+open_bd_design {C:/Users/Twaga/ECE421/XADC_DMA_FFTredo/XADC_PS.srcs/sources_1/bd/XADC_PS/XADC_PS.bd}
+file mkdir C:/Users/Twaga/ECE421/XADC_DMA_FFTredo/XADC_PS.sdk
+file copy -force C:/Users/Twaga/ECE421/XADC_DMA_FFTredo/XADC_PS.runs/impl_1/XADC_PS_wrapper.sysdef C:/Users/Twaga/ECE421/XADC_DMA_FFTredo/XADC_PS.sdk/XADC_PS_wrapper.hdf
+
+launch_sdk -workspace C:/Users/Twaga/ECE421/XADC_DMA_FFTredo/XADC_PS.sdk -hwspec C:/Users/Twaga/ECE421/XADC_DMA_FFTredo/XADC_PS.sdk/XADC_PS_wrapper.hdf

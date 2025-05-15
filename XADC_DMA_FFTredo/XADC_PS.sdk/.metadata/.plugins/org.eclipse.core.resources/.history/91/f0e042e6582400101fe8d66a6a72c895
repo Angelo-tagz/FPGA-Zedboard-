@@ -1,0 +1,269 @@
+/***************************** Include Files ********************************/
+
+#include <stdio.h>
+#include "platform.h"
+#include "xparameters.h"
+#include "xstatus.h"
+#include "xsysmon.h"
+#include "sleep.h"
+#include <complex.h>
+#include "xaxidma.h"
+#include <Math.h>
+
+
+/************************** Constant Definitions ****************************/
+#define DMA_DEVICE_ID 	XPAR_AXIDMA_0_DEVICE_ID
+
+#define FFT_Size	   64
+#define DMA_IDLE_MASK  0x00000002
+#define DMA_MM2S_RegOffset  0x04			// Memory Map to Stream
+#define DMA_S2MM_RegOffset  0x34			// Stream to Memory Map
+
+#define SYSMON_DEVICE_ID     XPAR_SYSMON_0_DEVICE_ID
+#define SAMPLE_BATCH_SIZE	 64
+#define CONV_SCALE_FACTOR	 1.25f/4095.0f
+
+/***************** Macros (Inline Functions) Definitions ********************/
+
+#define printf xil_printf /* Small foot-print printf function */
+
+/************************** Function Prototypes *****************************/
+
+static int SysMonPolledPrintfExample(u16 SysMonDeviceId);
+static int XAdcFractionToInt(float FloatNum);
+static float square_num(float x);
+float my_sqrtf(float number);
+
+
+/************************** Variable Definitions ****************************/
+
+static XSysMon SysMonInst;  /* SysMon driver instance */
+XAxiDma dmaInst;			// DMA driver instance
+
+
+
+u32 checkDMAIdle(u32 BaseAddress, u32 offset)
+{
+	u32 status = XAxiDma_ReadReg(BaseAddress, offset) & DMA_IDLE_MASK;
+	return status;
+}
+
+/****************************************************************************/
+/**************************        MAIN         *****************************/
+/****************************************************************************/
+
+int main()
+{
+
+    int Status;
+
+    init_platform();
+    print("Starting Program \n\r");
+
+    Status = SysMonPolledPrintfExample(SYSMON_DEVICE_ID);
+    if (Status != XST_SUCCESS) {
+        print("SysMon ADC Test: Failed \n\r");
+        return XST_FAILURE;
+    }
+
+    print("SysMon ADC Test: Finishing Program \n\r");
+    cleanup_platform();
+    return XST_SUCCESS;
+}
+
+/****************************************************************************/
+/**************************        FUNCTIONS         ************************/
+/****************************************************************************/
+
+int SysMonPolledPrintfExample(u16 SysMonDeviceId)
+{
+    int Status;
+    int SampleIndex = 0;
+
+    float complex FFT_input[FFT_Size];
+    float complex FFT_output[FFT_Size];
+
+
+    XSysMon_Config *ConfigPtr;
+    u32 VpvN_RawData;
+    float VpvN_Voltage;
+    XSysMon *SysMonInstPtr = &SysMonInst;
+
+    printf("\n\rEntering the SysMon Polled Example.\n\r");
+
+    /* Initialize the SysMon driver */
+    ConfigPtr = XSysMon_LookupConfig(SysMonDeviceId);
+    if (ConfigPtr == NULL) {
+        printf("XSysMon_LookupConfig() failed\n\r");
+        return XST_FAILURE;
+    }
+
+    // XADC configuration
+    Status = XSysMon_CfgInitialize(SysMonInstPtr, ConfigPtr, ConfigPtr->BaseAddress);
+    if (Status != XST_SUCCESS) {
+        printf("XSysMon_CfgInitialize() failed\n\r");
+        return XST_FAILURE;
+    }
+
+    /* Optional Self-test */
+    Status = XSysMon_SelfTest(SysMonInstPtr);
+    if (Status != XST_SUCCESS) {
+        printf("XSysMon_SelfTest() failed\n\r");
+        return XST_FAILURE;
+    }
+
+
+    // DMA configuration
+    XAxiDma_Config *DMA_confptr;
+
+    DMA_confptr = XAxiDma_LookupConfig(DMA_DEVICE_ID);
+    Status = XAxiDma_CfgInitialize(&dmaInst, DMA_confptr);
+
+    if(Status != XST_SUCCESS){
+       	printf("DMA initialization Failed.\r\n");
+       	return XST_FAILURE;
+    }
+
+
+    /* Configure to Single Channel Mode */
+    XSysMon_SetSequencerMode(SysMonInstPtr, XSM_SEQ_MODE_SAFE);
+    XSysMon_SetSequencerMode(SysMonInstPtr, XSM_SEQ_MODE_SINGCHAN);
+
+    /* Set single channel parameters for VP/VN (no event mode, differential) */
+    XSysMon_SetSingleChParams(SysMonInstPtr, XSM_CH_VPVN, 0, 0, 1);
+
+
+
+
+    while (1) {
+    	XSysMon_ResetAdc(SysMonInstPtr);
+    	XSysMon_StartAdcConversion(SysMonInstPtr);
+
+        /* Wait for End Of Conversion (EOC) */
+        while(!(XSysMon_GetStatus(SysMonInstPtr) & XSM_SR_EOC_MASK));
+
+        //printf("\n\r ----- New Sample ----- \n\r");
+
+        /* Read VP/VN Data */
+        VpvN_RawData = XSysMon_GetAdcData(SysMonInstPtr, XSM_CH_VPVN);
+        VpvN_RawData = (VpvN_RawData >> 4);
+        VpvN_Voltage = (float)VpvN_RawData * CONV_SCALE_FACTOR;
+
+        FFT_input[SampleIndex] = VpvN_Voltage;
+        SampleIndex++;
+
+
+
+
+
+       /* 3. Check if a full batch is ready */
+        if (SampleIndex >= SAMPLE_BATCH_SIZE) {
+
+      /************* NEW CODE *****************************************/
+
+        	 Xil_DCacheFlushRange((UINTPTR)FFT_input, (sizeof(float complex)*FFT_Size));   //Writing data on cache memory to system memory.
+        	 Xil_DCacheFlushRange((UINTPTR)FFT_output, (sizeof(float complex)*FFT_Size));
+
+        	    //Inform DMA to receive the data from FFT
+        	 Status = XAxiDma_SimpleTransfer(&dmaInst,(UINTPTR)FFT_output, (sizeof(float complex)) *FFT_Size, XAXIDMA_DEVICE_TO_DMA);
+
+        	    //Inform DMA to send data from FFT
+        	 Status = XAxiDma_SimpleTransfer(&dmaInst,(UINTPTR)FFT_input, (sizeof(float complex)) *FFT_Size, XAXIDMA_DMA_TO_DEVICE);
+
+        	 Status = checkDMAIdle(XPAR_AXIDMA_0_BASEADDR, DMA_MM2S_RegOffset);
+        	 while(Status != DMA_IDLE_MASK)
+        	 {
+        	   	Status = checkDMAIdle(XPAR_AXIDMA_0_BASEADDR, DMA_MM2S_RegOffset);
+        	 }
+
+
+        	 Status = checkDMAIdle(XPAR_AXIDMA_0_BASEADDR, DMA_S2MM_RegOffset);
+        	 while(Status != DMA_IDLE_MASK)
+        	 {
+        	   	Status = checkDMAIdle(XPAR_AXIDMA_0_BASEADDR, DMA_S2MM_RegOffset);
+        	 }
+
+
+
+
+      /*********************************************************************/
+              // 4. Send the packet to GUI
+             printf("{RAW:");
+
+             for (int i = 0; i < SAMPLE_BATCH_SIZE; i++) {
+                    //printf("%0d.%03d", (int)(VpvN_Voltage), XAdcFractionToInt(VpvN_Voltage));
+            	 	printf("%0d.%03d", (int)(FFT_input[i]), XAdcFractionToInt(FFT_input[i]));
+                    if (i != SAMPLE_BATCH_SIZE - 1) {
+                        printf(", ");
+                    }
+             }
+
+             printf("}\n\r"); // Close the packet
+
+
+             /* Print FFT output */
+             /*("\n FFT output: \r\n");
+             for(int i = 0; i < SAMPLE_BATCH_SIZE; i++)
+             {
+               	printf("%f + I%f \n", crealf(FFT_output[i]), cimagf(FFT_output[i]));
+             }*/
+
+             printf("{FFT:");
+                for (int i = 0; i < SAMPLE_BATCH_SIZE; i++) {
+                    float magnitude = my_sqrtf(square_num(crealf(FFT_output[i])) + square_num(cimagf(FFT_output[i])));
+    //                printf("%0d.%03d", (int)magnitude, XAdcFractionToInt(magnitude));
+                    if (i != SAMPLE_BATCH_SIZE - 1) printf(", ");
+                }
+                printf("}\n\r");
+
+
+             SampleIndex = 0;
+        }
+
+        //printf("%0d.%03d Volts.\n\r", (int)(VpvN_Voltage), XAdcFractionToInt(VpvN_Voltage));
+        //printf("raw: %d \n\r  ", (int)VpvN_RawData);
+
+        usleep(50000);  /* Sleep 50ms to avoid flooding */
+    }
+
+    printf("Exiting the SysMon Polled Example.\n\r");
+    return XST_SUCCESS;
+}
+
+/****************************************************************************/
+
+int XAdcFractionToInt(float FloatNum)
+{
+    float Temp;
+
+    Temp = FloatNum;
+    if (FloatNum < 0) {
+        Temp = -(FloatNum);
+    }
+    return ( (int)((Temp - (float)((int)Temp)) * (1000.0f)) );
+}
+
+
+float square_num(float x) {
+    return x * x;
+}
+
+
+
+float my_sqrtf(float number) {
+    float x = number;
+    float guess = number / 2.0f;
+    const float tolerance = 0.0001f; // or smaller for more accuracy
+
+    if (number <= 0) {
+        return 0;
+    }
+
+    while ((guess * guess - x) > tolerance || (x - guess * guess) > tolerance) {
+        guess = (guess + x / guess) / 2.0f;
+    }
+
+    return guess;
+}
+
+
